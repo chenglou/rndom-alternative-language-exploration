@@ -25,16 +25,21 @@ function getSlope(aT, aA1, aA2) {
   return 3.0 * a(aA1, aA2) * aT * aT + 2.0 * b(aA1, aA2) * aT + 3.0 * aA1;
 }
 
-function binarySubdivide(_$staropt$star, _$staropt$star$1, _$staropt$star$2, aX, _aA, _aB, mX1, mX2) {
+function binarySubdivide(param, param$1, param$2, param$3, param$4) {
+  var _currentT = 0.0;
+  var _currentX = 0.0;
+  var _i = 0;
+  var aX = param;
+  var _aA = param$1;
+  var _aB = param$2;
+  var mX1 = param$3;
+  var mX2 = param$4;
   while(true) {
     var aB = _aB;
     var aA = _aA;
-    var $staropt$star = _$staropt$star$2;
-    var $staropt$star$1 = _$staropt$star$1;
-    var $staropt$star$2 = _$staropt$star;
-    var currentT = $staropt$star$2 !== undefined ? $staropt$star$2 : 0.0;
-    var currentX = $staropt$star$1 !== undefined ? $staropt$star$1 : 0.0;
-    var i = $staropt$star !== undefined ? $staropt$star : 0;
+    var i = _i;
+    var currentX = _currentX;
+    var currentT = _currentT;
     var match = Math.abs(currentX) > 0.0000001 && (i + 1 | 0) < 10;
     if (match) {
       var currentT$1 = aA + (aB - aA) / 2.0;
@@ -42,15 +47,15 @@ function binarySubdivide(_$staropt$star, _$staropt$star$1, _$staropt$star$2, aX,
       var i$1 = i + 1 | 0;
       if (currentX$1 > 0.0) {
         _aB = currentT$1;
-        _$staropt$star$2 = i$1;
-        _$staropt$star$1 = currentX$1;
-        _$staropt$star = currentT$1;
+        _i = i$1;
+        _currentX = currentX$1;
+        _currentT = currentT$1;
         continue ;
       } else {
         _aA = currentT$1;
-        _$staropt$star$2 = i$1;
-        _$staropt$star$1 = currentX$1;
-        _$staropt$star = currentT$1;
+        _i = i$1;
+        _currentX = currentX$1;
+        _currentT = currentT$1;
         continue ;
       }
     } else {
@@ -124,7 +129,7 @@ function bezier(mX1, mY1, mX2, mY2) {
         } else if (match$1) {
           return guessForT;
         } else {
-          return binarySubdivide(undefined, undefined, undefined, aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
+          return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
         }
       };
       return (function (x) {

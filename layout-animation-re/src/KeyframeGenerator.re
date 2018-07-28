@@ -19,19 +19,16 @@ type easingType =
 let generateStaticKeyframes = (ease, duration, delay) => {
   let numSteps = duration /. timestep;
   let timestep = 1.0 /. numSteps;
-
+  let numSteps_ = int_of_float(numSteps);
+  let keyframes = Belt.Array.makeUninitializedUnsafe(numSteps_);
   let currentX = ref(0.0);
-  let keyframes =
-    Belt.Array.makeBy(
-      int_of_float(numSteps) + 2,
-      _ => {
-        let curX = currentX^;
-        currentX := currentX^ +. timestep;
-        ease(. curX);
-      },
-    );
 
-  Belt.Array.setUnsafe(keyframes, int_of_float(numSteps) + 1, 1.0);
+  for (_i in 1 to numSteps_) {
+    ignore(Js.Array.push(ease(. currentX^), keyframes));
+    currentX := currentX^ +. timestep;
+  };
+
+  ignore(Js.Array.push(1.0, keyframes));
   {"keyframes": keyframes, "duration": duration, "delay": delay};
 };
 
