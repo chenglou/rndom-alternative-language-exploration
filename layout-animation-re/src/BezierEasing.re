@@ -50,16 +50,17 @@ let rec newtonRaphsonIterate = (~i=0, aX, aGuessT, mX1, mX2) =>
     };
   };
 
-let linearEasing = x => x;
+let linearEasing = (. x) => x;
 
 let bezier = (mX1, mY1, mX2, mY2) =>
-  ! (0. <= mX1 && mX1 <= 1. && 0. <= mX2 && mX2 <= 1.) ?
-    failwith("bezier x values must be in [0, 1] range") :
+  !(0. <= mX1 && mX1 <= 1. && 0. <= mX2 && mX2 <= 1.) ?
+    raise(Invalid_argument("bezier x values must be in [0, 1] range")) :
     mX1 == mY1 && mX2 == mY2 ?
       linearEasing :
       {
+        let arrayGet = Belt.Array.getUnsafe;
         let sampleValues =
-          Array.init(kSplineTableSize, i =>
+          Belt.Array.makeBy(kSplineTableSize, i =>
             calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2)
           );
 
@@ -69,7 +70,7 @@ let bezier = (mX1, mY1, mX2, mY2) =>
           let lastSample = kSplineTableSize - 1;
 
           while (currentSample^ !== lastSample
-                 && sampleValues[currentSample^] <= aX) {
+                 && arrayGet(sampleValues, currentSample^) <= aX) {
             intervalStart := intervalStart^ +. kSampleStepSize;
             currentSample := currentSample^ + 1;
           };
@@ -78,9 +79,10 @@ let bezier = (mX1, mY1, mX2, mY2) =>
 
           /* Interpolate to provide an initial guess for t */
           let dist =
-            (aX -. sampleValues[currentSample^])
+            (aX -. arrayGet(sampleValues, currentSample^))
             /. (
-              sampleValues[currentSample^ + 1] -. sampleValues[currentSample^]
+              arrayGet(sampleValues, currentSample^ + 1)
+              -. arrayGet(sampleValues, currentSample^)
             );
           let guessForT = intervalStart^ +. dist *. kSampleStepSize;
 
@@ -99,7 +101,7 @@ let bezier = (mX1, mY1, mX2, mY2) =>
           };
         };
 
-        x =>
+        (. x) =>
           switch (x) {
           | 0.0 => 0.0
           | 1.0 => 1.0

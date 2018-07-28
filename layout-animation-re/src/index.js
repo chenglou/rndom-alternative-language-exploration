@@ -1,15 +1,6 @@
 const KeyframeGenerator = require("./KeyframeGenerator.bs");
 
-function generateKeyframes(easeType, delay, duration) {
-  const rawResult = KeyframeGenerator.generateKeyframes(
-    easeType,
-    delay,
-    duration
-  );
-  return KeyframeGenerator.keyframeResultToJs(rawResult);
-}
-
-module.exports.generateKeyframes = generateKeyframes;
+module.exports.generateKeyframes = require("./KeyframeGenerator.bs").generateKeyframes;
 
 module.exports.EasingType = {
   linear: KeyframeGenerator.linear,
