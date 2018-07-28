@@ -1,3 +1,5 @@
+[@bs.new] external float32Array: int => array('a) = "Float32Array";
+
 let newtonIterations = 4;
 let newtonMinSlope = 0.001;
 let subdivisionPrecision = 0.0000001;
@@ -35,20 +37,21 @@ let rec binarySubdivide =
     };
   };
 
-let rec newtonRaphsonIterate = (~i=0, aX, aGuessT, mX1, mX2) =>
-  switch (i < newtonIterations) {
-  | false => aGuessT
-  | true =>
+let rec newtonRaphsonIterate = (i, aX, aGuessT, mX1, mX2) => {
+  if (i < newtonIterations) {
     let currentSlope = getSlope(aGuessT, mX1, mX2);
-    switch (currentSlope) {
-    | 0.0 => aGuessT
-    | currentSlope =>
+    if (currentSlope === 0.0) {
+      aGuessT
+    } else {
       let currentX = calcBezier(aGuessT, mX1, mX2) -. aX;
       let aGuessT = aGuessT -. currentX /. currentSlope;
-      let i = i + 1;
-      newtonRaphsonIterate(~i, aX, aGuessT, mX1, mX2);
-    };
+      newtonRaphsonIterate(i + 1, aX, aGuessT, mX1, mX2);
+    }
+  } else {
+    aGuessT;
   };
+};
+let newtonRaphsonIterate = newtonRaphsonIterate(0);
 
 let linearEasing = (. x) => x;
 
@@ -59,10 +62,16 @@ let bezier = (mX1, mY1, mX2, mY2) =>
       linearEasing :
       {
         let arrayGet = Belt.Array.getUnsafe;
-        let sampleValues =
-          Belt.Array.makeBy(kSplineTableSize, i =>
-            calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2)
+        let arraySet = Belt.Array.setUnsafe;
+
+        let sampleValues = float32Array(kSplineTableSize);
+        for (i in 0 to kSplineTableSize - 1) {
+          arraySet(
+            sampleValues,
+            i,
+            calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2),
           );
+        };
 
         let getTForX = aX => {
           let intervalStart = ref(0.0);
