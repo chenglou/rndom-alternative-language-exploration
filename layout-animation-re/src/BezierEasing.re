@@ -60,7 +60,7 @@ let bezier = (mX1, mY1, mX2, mY2) =>
     mX1 == mY1 && mX2 == mY2 ?
       linearEasing :
       {
-        let sampleValues = Belt.Array.makeUninitializedUnsafe(kSplineTableSize);
+        let sampleValues = Belt.Array.make(kSplineTableSize, 0.0);
 
         for (i in 0 to kSplineTableSize - 1) {
           /*sampleValues[i] = calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2)*/

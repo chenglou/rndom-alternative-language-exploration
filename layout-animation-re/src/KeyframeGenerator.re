@@ -28,7 +28,7 @@ let generateStaticKeyframes = (ease, duration, delay) => {
   let timestep = 1.0 /. numSteps;
 
   let currentX = ref(0.0);
-  let keyframes = Belt.Array.makeUninitializedUnsafe(int_of_float(numSteps) + 2);
+  let keyframes = Belt.Array.make(int_of_float(numSteps) + 2, 0.0);
 
   for (i in 0 to int_of_float(numSteps) + 1) {
     let curX = currentX^;
@@ -37,7 +37,7 @@ let generateStaticKeyframes = (ease, duration, delay) => {
     Belt.Array.setUnsafe(keyframes, i, ease(. curX));
   };
 
-  /*keyframes[int_of_float(numSteps) + 1] = 1.0;*/
+  keyframes[int_of_float(numSteps) + 1] = 1.0;
   Belt.Array.setUnsafe(keyframes, int_of_float(numSteps) + 1, 1.0);
   {keyframes, duration, delay};
 };
