@@ -53,7 +53,7 @@ let rec newtonRaphsonIterate = (~i=0, aX, aGuessT, mX1, mX2) =>
 let linearEasing = x => x;
 
 let bezier = (mX1, mY1, mX2, mY2) =>
-  ! (0. <= mX1 && mX1 <= 1. && 0. <= mX2 && mX2 <= 1.) ?
+  !(0. <= mX1 && mX1 <= 1. && 0. <= mX2 && mX2 <= 1.) ?
     failwith("bezier x values must be in [0, 1] range") :
     mX1 == mY1 && mX2 == mY2 ?
       linearEasing :
@@ -80,7 +80,8 @@ let bezier = (mX1, mY1, mX2, mY2) =>
           let dist =
             (aX -. sampleValues[currentSample^])
             /. (
-              sampleValues[currentSample^ + 1] -. sampleValues[currentSample^]
+              sampleValues[(currentSample^ + 1)]
+              -. sampleValues[currentSample^]
             );
           let guessForT = intervalStart^ +. dist *. kSampleStepSize;
 
