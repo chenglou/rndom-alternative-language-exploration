@@ -3,7 +3,7 @@ let springFactor = 0.5;
 let timestep = 16.667 *. timestepCoefficient;
 
 module StaticEasingFunctions = {
-  let linear = x => x;
+  let linear = (. x) => x;
   let easeIn = BezierEasing.bezier(0.42, 0.0, 1.0, 1.0);
   let easeOut = BezierEasing.bezier(0.0, 0.0, 0.58, 1.0);
   let easeInEaseOut = BezierEasing.bezier(0.42, 0.0, 0.58, 1.0);
@@ -28,28 +28,27 @@ let generateStaticKeyframes = (ease, duration, delay) => {
   let timestep = 1.0 /. numSteps;
 
   let currentX = ref(0.0);
-  let keyframes =
-    Array.init(
-      int_of_float(numSteps) + 2,
-      _ => {
-        let curX = currentX^;
-        currentX := currentX^ +. timestep;
-        ease(curX);
-      },
-    );
+  let keyframes = Belt.Array.makeUninitializedUnsafe(int_of_float(numSteps) + 2);
 
-  keyframes[int_of_float(numSteps) + 1] = 1.0;
+  for (i in 0 to int_of_float(numSteps) + 1) {
+    let curX = currentX^;
+    currentX := currentX^ +. timestep;
+    /*keyframes[i] = ease(. curX);*/
+    Belt.Array.setUnsafe(keyframes, i, ease(. curX));
+  };
+
+  /*keyframes[int_of_float(numSteps) + 1] = 1.0;*/
+  Belt.Array.setUnsafe(keyframes, int_of_float(numSteps) + 1, 1.0);
   {keyframes, duration, delay};
 };
 
 let generateKeyframes = (~ease=EaseInEaseOut, ~delay=0.0, ~duration) => {
   let generator =
     switch (ease) {
-    | Linear => generateStaticKeyframes(StaticEasingFunctions.linear)
-    | EaseIn => generateStaticKeyframes(StaticEasingFunctions.easeIn)
-    | EaseOut => generateStaticKeyframes(StaticEasingFunctions.easeOut)
-    | EaseInEaseOut =>
-      generateStaticKeyframes(StaticEasingFunctions.easeInEaseOut)
+    | Linear => StaticEasingFunctions.linear
+    | EaseIn => StaticEasingFunctions.easeIn
+    | EaseOut => StaticEasingFunctions.easeOut
+    | EaseInEaseOut => StaticEasingFunctions.easeInEaseOut
     };
-  generator(duration, delay);
+  generateStaticKeyframes(generator, duration, delay);
 };

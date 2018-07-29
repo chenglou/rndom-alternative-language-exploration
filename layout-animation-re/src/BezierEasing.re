@@ -16,8 +16,7 @@ let calcBezier = (aT, aA1, aA2) =>
 let getSlope = (aT, aA1, aA2) =>
   3.0 *. a(aA1, aA2) *. aT *. aT +. 2.0 *. b(aA1, aA2) *. aT +. c(aA1);
 
-let rec binarySubdivide =
-        (~currentT=0.0, ~currentX=0.0, ~i=0, aX, aA, aB, mX1, mX2) =>
+let rec binarySubdivide = (~currentT, ~currentX, ~i, aX, aA, aB, mX1, mX2) =>
   switch (
     abs_float(currentX) > subdivisionPrecision
     && i
@@ -34,8 +33,9 @@ let rec binarySubdivide =
       binarySubdivide(~currentT, ~currentX, ~i, aX, currentT, aB, mX1, mX2);
     };
   };
+let binarySubdivide = binarySubdivide(~currentT=0.0, ~currentX=0.0, ~i=0);
 
-let rec newtonRaphsonIterate = (~i=0, aX, aGuessT, mX1, mX2) =>
+let rec newtonRaphsonIterate = (~i, aX, aGuessT, mX1, mX2) => {
   switch (i < newtonIterations) {
   | false => aGuessT
   | true =>
@@ -49,8 +49,10 @@ let rec newtonRaphsonIterate = (~i=0, aX, aGuessT, mX1, mX2) =>
       newtonRaphsonIterate(~i, aX, aGuessT, mX1, mX2);
     };
   };
+};
+let newtonRaphsonIterate = newtonRaphsonIterate(~i=0);
 
-let linearEasing = x => x;
+let linearEasing = (. x) => x;
 
 let bezier = (mX1, mY1, mX2, mY2) =>
   !(0. <= mX1 && mX1 <= 1. && 0. <= mX2 && mX2 <= 1.) ?
@@ -58,10 +60,12 @@ let bezier = (mX1, mY1, mX2, mY2) =>
     mX1 == mY1 && mX2 == mY2 ?
       linearEasing :
       {
-        let sampleValues =
-          Array.init(kSplineTableSize, i =>
-            calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2)
-          );
+        let sampleValues = Belt.Array.makeUninitializedUnsafe(kSplineTableSize);
+
+        for (i in 0 to kSplineTableSize - 1) {
+          /*sampleValues[i] = calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2)*/
+          Belt.Array.setUnsafe(sampleValues, i, calcBezier(float_of_int(i) *. kSampleStepSize, mX1, mX2));
+        }
 
         let getTForX = aX => {
           let intervalStart = ref(0.0);
@@ -69,7 +73,7 @@ let bezier = (mX1, mY1, mX2, mY2) =>
           let lastSample = kSplineTableSize - 1;
 
           while (currentSample^ !== lastSample
-                 && sampleValues[currentSample^] <= aX) {
+                 && Belt.Array.getUnsafe(sampleValues, currentSample^) <= aX) {
             intervalStart := intervalStart^ +. kSampleStepSize;
             currentSample := currentSample^ + 1;
           };
@@ -78,10 +82,10 @@ let bezier = (mX1, mY1, mX2, mY2) =>
 
           /* Interpolate to provide an initial guess for t */
           let dist =
-            (aX -. sampleValues[currentSample^])
+            (aX -. Belt.Array.getUnsafe(sampleValues, currentSample^))
             /. (
-              sampleValues[(currentSample^ + 1)]
-              -. sampleValues[currentSample^]
+              Belt.Array.getUnsafe(sampleValues, (currentSample^ + 1))
+              -. Belt.Array.getUnsafe(sampleValues, currentSample^)
             );
           let guessForT = intervalStart^ +. dist *. kSampleStepSize;
 
@@ -100,7 +104,7 @@ let bezier = (mX1, mY1, mX2, mY2) =>
           };
         };
 
-        x =>
+        (. x) =>
           switch (x) {
           | 0.0 => 0.0
           | 1.0 => 1.0
